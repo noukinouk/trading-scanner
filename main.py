@@ -11,25 +11,28 @@ def home():
 def scan():
 
    symbols = [
-       "TSLA","NVDA","AAPL","MSFT","META",
-       "AMZN","AMD","COIN","PLTR","SOFI"
+       "TSLA","NVDA","AMD","PLTR","SOFI","COIN","AAPL","META","AMZN",
+       "MARA","RIOT","LCID","NIO","RIVN"
    ]
 
-   results = []
+   movers = []
 
    for symbol in symbols:
+
        try:
            ticker = yf.Ticker(symbol)
            data = ticker.history(period="1d")
 
-           if not data.empty:
+           if data.empty:
+               continue
 
-               price = float(data["Close"].iloc[-1])
-               open_price = float(data["Open"].iloc[-1])
+           open_price = float(data["Open"].iloc[-1])
+           price = float(data["Close"].iloc[-1])
 
-               change = ((price-open_price)/open_price)*100
+           change = ((price-open_price)/open_price)*100
 
-               results.append({
+           if change > 1:   # filtrer les actions qui montent
+               movers.append({
                    "symbol":symbol,
                    "price":round(price,2),
                    "change_percent":round(change,2)
@@ -38,7 +41,6 @@ def scan():
        except:
            pass
 
-   # trier par performance
-   results = sorted(results,key=lambda x:x["change_percent"],reverse=True)
+   movers = sorted(movers,key=lambda x:x["change_percent"],reverse=True)
 
-   return {"top_movers":results}
+   return {"top_momentum":movers}
