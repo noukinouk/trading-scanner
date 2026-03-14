@@ -9,22 +9,36 @@ def home():
 
 @app.get("/scan")
 def scan():
-   symbols = ["TSLA", "NVDA", "AAPL", "MSFT", "BTC-USD"]
 
-   results = {}
+   symbols = [
+       "TSLA","NVDA","AAPL","MSFT","META",
+       "AMZN","AMD","COIN","PLTR","SOFI"
+   ]
+
+   results = []
 
    for symbol in symbols:
-       ticker = yf.Ticker(symbol)
-       data = ticker.history(period="1d")
+       try:
+           ticker = yf.Ticker(symbol)
+           data = ticker.history(period="1d")
 
-       if not data.empty:
-           price = float(data["Close"].iloc[-1])
-           open_price = float(data["Open"].iloc[-1])
-           change = round(((price - open_price) / open_price) * 100, 2)
+           if not data.empty:
 
-           results[symbol] = {
-               "price": price,
-               "change_percent": change
-           }
+               price = float(data["Close"].iloc[-1])
+               open_price = float(data["Open"].iloc[-1])
 
-   return results
+               change = ((price-open_price)/open_price)*100
+
+               results.append({
+                   "symbol":symbol,
+                   "price":round(price,2),
+                   "change_percent":round(change,2)
+               })
+
+       except:
+           pass
+
+   # trier par performance
+   results = sorted(results,key=lambda x:x["change_percent"],reverse=True)
+
+   return {"top_movers":results}
